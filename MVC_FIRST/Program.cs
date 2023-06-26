@@ -1,15 +1,27 @@
 using EIP.Services;
 using EIP.Services.Interfaces;
-using Azure;
-using Azure.AI.OpenAI;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var configuration = new ConfigurationBuilder()
+    .SetBasePath(builder.Environment.ContentRootPath)
+    .AddJsonFile("appsettings.json")
+    .Build();
+// 設定 Serilog
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(configuration)
+    .CreateLogger();
+
+var logger = Log.ForContext<Program>();
+// 清除原有的 Logger 提供程序
+builder.Logging.ClearProviders();
+
+// 設定 Logger 提供程序為 Serilog
+builder.Logging.AddSerilog();
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-
-// Load the configuration from the appsettings.json file.
-var configuration = builder.Configuration;
 
 builder.Services.AddScoped<INotifyService, NotifyService>();
 
@@ -21,6 +33,7 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+logger.Information("Hello, Serilog!");
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
