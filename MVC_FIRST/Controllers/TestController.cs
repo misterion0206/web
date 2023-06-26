@@ -6,19 +6,45 @@ using Azure.AI.OpenAI;
 public class TestController : Controller
 {
     private readonly OpenAIClient _client;
+    private readonly ILogger _logger;
 
-    public TestController()
+    public TestController(ILogger<TestController> logger)
     {
         string endpoint = "https://yochen-test1.openai.azure.com/";
         string key = "f36a01a2964e42778eccd84203c9acdf";
         _client = new OpenAIClient(new Uri(endpoint), new AzureKeyCredential(key));
+        _logger = logger;
     }
+
+    #region for test
+
+    [HttpGet("WriteException")]
+    public IActionResult WriteException()
+    {
+        throw new Exception("Test Exception");
+    }
+
+    public class form
+    {
+        public string name { get; set; }
+        public string age { get; set; }
+    }
+
+    // wirte exception for post action
+    [HttpPost("WriteExceptionForPost")]
+    public IActionResult WriteExceptionForPost([FromForm] form data)
+    {
+        throw new Exception("Test Exception for Post");
+    }
+
+    #endregion for test
 
     [HttpGet]
     public IActionResult Index()
     {
         return View();
     }
+
     [HttpPost]
     public async Task<string> Index([FromBody] PromptRequest request)
     {
